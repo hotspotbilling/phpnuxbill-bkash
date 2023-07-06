@@ -222,7 +222,7 @@ function bkash_get_server()
 {
     global $_app_stage;
     if ($_app_stage == 'Live') {
-        return 'https://tokenized.bka.sh/v1.2.0-beta/tokenized/';
+        return 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/';
     } else {
         return 'https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/';
     }
