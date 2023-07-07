@@ -20,7 +20,6 @@ function bkash_show_config()
 {
     global $ui, $config;
     $ui->assign('_title', 'bKash - Tokenizer - Payment Gateway');
-    //$ui->assign('channels', json_decode(file_get_contents('system/paymentgateway/channel_duitku.json'), true));
     $ui->display('bkash.tpl');
 }
 
