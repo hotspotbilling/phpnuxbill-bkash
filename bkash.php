@@ -72,7 +72,7 @@ function bkash_save_config()
         $d->save();
     }
     _log('[' . $admin['username'] . ']: bKash ' . Lang::T('Settings_Saved_Successfully'), 'Admin', $admin['id']);
-    r2(U . 'paymentgateway/bKash', 's', Lang::T('Settings_Saved_Successfully'));
+    r2(U . 'paymentgateway/bkash', 's', Lang::T('Settings_Saved_Successfully'));
 }
 
 function bkash_create_transaction($trx, $user)
@@ -131,8 +131,6 @@ function bkash_get_status($trx, $user)
 
         r2(U . "order/view/" . $trx['id'], 's', Lang::T("Transaction has been paid."));
     } else {
-        print_r($result);
-        die();
         r2(U . "order/view/" . $trx['id'], 'w', Lang::T("Transaction still unpaid."));
     }
 }
@@ -147,6 +145,7 @@ function bkash_payment_notification()
         json_decode(Http::postJsonData(bkash_get_server() . 'checkout/execute', ['paymentID' => $paymentID], ['Authorization: ' . bkash_get_token(), 'X-App-Key: ' . $config['bkash_app_key']]), true);
         //query
         # Just let the user check the payment from user page
+        die('OK');
     } else {
         sendTelegram("BKASH payment " . $_GET['status'] . " for paymentID: " . $_GET['paymentID']);
     }
