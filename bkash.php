@@ -158,56 +158,10 @@ function bkash_get_token()
         'app_key' => $config['bkash_app_key'],
         'app_secret' => $config['bkash_app_secret']
     ];
-    $exp = $config['bkash_token_expired'];
-    $token = $config['bkash_token'];
-
-    if (time() < $exp) {
-        return $token;
-    }
-    if (!empty($config['bkash_refresh_token'])) {
-        $json['refresh_token'] = $config['bkash_refresh'];
-        $url = bkash_get_server() . 'checkout/token/refresh';
-    } else {
-        $url = bkash_get_server() . 'checkout/token/grant';
-    }
+    $url = bkash_get_server() . 'checkout/token/grant';
     $headers = ['username: '.$config['bkash_username'], 'password: '. $config['bkash_password']];
     $result = json_decode(Http::postJsonData($url, $json, $headers), true);
     if ($result['statusMessage'] == 'Successful') {
-        // if has refresh token from server, save it
-        if (!empty($result['refresh_token'])) {
-            $d = ORM::for_table('tbl_appconfig')->where('setting', 'bkash_refresh_token')->find_one();
-            if ($d) {
-                $d->value = $result['refresh_token'];
-                $d->save();
-            } else {
-                $d = ORM::for_table('tbl_appconfig')->create();
-                $d->setting = 'bkash_refresh_token';
-                $d->value = $result['refresh_token'];
-                $d->save();
-            }
-        }
-        // save token
-        $d = ORM::for_table('tbl_appconfig')->where('setting', 'bkash_token')->find_one();
-        if ($d) {
-            $d->value = $result['id_token'];
-            $d->save();
-        } else {
-            $d = ORM::for_table('tbl_appconfig')->create();
-            $d->setting = 'bkash_token';
-            $d->value = $result['id_token'];
-            $d->save();
-        }
-        // save expire
-        $d = ORM::for_table('tbl_appconfig')->where('setting', 'bkash_token_expired')->find_one();
-        if ($d) {
-            $d->value = time() + ($result['expires_in'] - 10);
-            $d->save();
-        } else {
-            $d = ORM::for_table('tbl_appconfig')->create();
-            $d->setting = 'bkash_token_expired';
-            $d->value = time() + ($result['expires_in'] - 10);
-            $d->save();
-        }
         return $result['id_token'];
     }else{
         sendTelegram("bKash payment failed\n\n" . json_encode($result, JSON_PRETTY_PRINT));
