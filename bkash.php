@@ -110,7 +110,7 @@ function bkash_get_status($trx, $user)
 {
     global $config;
 
-    $maxRetries = 2;
+    	$maxRetries = 3;
 	$retryDelay = 5; // Seconds between retries
 	$statusChecked = false;
 
