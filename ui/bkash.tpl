@@ -48,7 +48,9 @@
                     </div>
                     <pre>/ip hotspot walled-garden
 add dst-host=bkash.com
-add dst-host=*.bkash.com</pre>
+add dst-host=*.bkash.com
+add dst-host=*.bka.sh
+</pre>
                     <small id="emailHelp" class="form-text text-muted">Set Telegram Bot to get any error and
                         notification</small>
                 </div>
