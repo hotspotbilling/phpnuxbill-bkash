@@ -84,14 +84,14 @@ function bkash_create_transaction($trx, $user)
         'payerReference' => $trx['id'],
         'currency' => 'BDT',
         'amount' => $trx['price'],
-        'callbackURL' => U . 'order/view/'.$trx['id'].'/check',
+        'callbackURL' => U . 'order/view/' . $trx['id'] . '/check',
         'merchantInvoiceNumber' => $trx['id'],
     ];
     $headers = ['Authorization: ' . bkash_get_token(), 'X-App-Key: ' . $config['bkash_app_key']];
     $result = json_decode(Http::postJsonData(bkash_get_server() . 'checkout/create', $json, $headers), true);
     if ($result['statusMessage'] != 'Successful') {
         sendTelegram("bKash payment failed\n\n" . json_encode($result, JSON_PRETTY_PRINT));
-        r2(U . 'order/package', 'e', Lang::T("Failed to create transaction. ".$result['errorMessage']));
+        r2(U . 'order/package', 'e', Lang::T("Failed to create transaction. " . $result['errorMessage']));
     }
     $d = ORM::for_table('tbl_payment_gateway')
         ->where('username', $user['username'])
@@ -109,29 +109,26 @@ function bkash_create_transaction($trx, $user)
 function bkash_get_status($trx, $user)
 {
     global $config;
-
-    	$maxRetries = 3;
-	$retryDelay = 5; // Seconds between retries
-	$statusChecked = false;
-
+    $maxRetries = 3;
+    $retryDelay = 5;
+    $statusChecked = false;
     for ($i = 0; $i < $maxRetries; $i++) {
-      Http::postJsonData(bkash_get_server() . 'checkout/execute', ['paymentID' => $trx['gateway_trx_id']], ['Authorization: ' . bkash_get_token(), 'X-App-Key: ' . $config['bkash_app_key']]);
+        Http::postJsonData(bkash_get_server() . 'checkout/execute', ['paymentID' => $trx['gateway_trx_id']], ['Authorization: ' . bkash_get_token(), 'X-App-Key: ' . $config['bkash_app_key']]);
         $result = json_decode(Http::postJsonData(bkash_get_server() . 'checkout/payment/status', ['paymentID' => $trx['gateway_trx_id']], ['Authorization: ' . bkash_get_token(), 'X-App-Key: ' . $config['bkash_app_key']]), true);
-        
-        if ($result['statusCode'] == '0000') {
+        if (isset($result['statusCode']) && $result['statusCode'] == '0000') {
             $statusChecked = true;
             break;
         }
-    
-        // Wait before retrying
+
         sleep($retryDelay);
     }
-    
+
     if (!$statusChecked) {
         sendTelegram("bKash payment status failed\n\n" . json_encode($result, JSON_PRETTY_PRINT));
         r2(U . "order/view/" . $trx['id'], 'e', Lang::T("Failed to check status transaction. " . $result['errorMessage']));
+        exit;
     }
-    
+
     if ($trx['status'] == 2) {
         r2(U . "order/view/" . $trx['id'], 'd', Lang::T("Transaction has been paid.."));
     }
@@ -176,13 +173,13 @@ function bkash_get_token()
         'app_secret' => $config['bkash_app_secret']
     ];
     $url = bkash_get_server() . 'checkout/token/grant';
-    $headers = ['username: '.$config['bkash_username'], 'password: '. $config['bkash_password']];
+    $headers = ['username: ' . $config['bkash_username'], 'password: ' . $config['bkash_password']];
     $result = json_decode(Http::postJsonData($url, $json, $headers), true);
     if ($result['statusMessage'] == 'Successful') {
         return $result['id_token'];
-    }else{
+    } else {
         sendTelegram("bKash payment failed\n\n" . json_encode($result, JSON_PRETTY_PRINT));
-        r2(U . 'order/package', 'e', Lang::T("Failed to create transaction. ".$result['errorMessage']));
+        r2(U . 'order/package', 'e', Lang::T("Failed to create transaction. " . $result['errorMessage']));
     }
 }
 
